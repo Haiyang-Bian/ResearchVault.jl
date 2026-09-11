@@ -1,0 +1,9 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ResearchVault = "7a53f6f4-db81-43fb-8cd3-ce159c3c5249"
+
+[sources]
+ResearchVault = {path = ".."}
+
+[compat]
+Documenter = "1"
