@@ -126,7 +126,8 @@ end
         @test_throws VaultConnectionError ResearchVault._read_connection(runtime; process_probe=(_)->:reused)
         @test_throws VaultConnectionError ResearchVault._read_connection(runtime; process_probe=(_)->:unknown)
         @test ResearchVault._process_identity(Dict("pid"=>getpid())) == :reused
-        @test ResearchVault._process_identity(Dict("pid"=>typemax(UInt32))) == :exited
+        @test ResearchVault._process_identity(Dict("pid"=>typemax(UInt32))) ==
+              (Sys.iswindows() ? :exited : :unknown)
 
         executable = joinpath(root, "research-vault-service.exe")
         touch(executable)

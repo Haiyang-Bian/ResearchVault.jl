@@ -87,7 +87,8 @@ end
 
 function _process_identity(discovery::AbstractDict)
     pid = get(discovery, "pid", nothing)
-    pid isa Integer && 0 < pid <= typemax(UInt32) || return :unknown
+    maximum_pid = Sys.iswindows() ? typemax(UInt32) : typemax(Cint)
+    pid isa Integer && 0 < pid <= maximum_pid || return :unknown
     if !Sys.iswindows()
         status = ccall(:kill, Cint, (Cint, Cint), pid, 0)
         status != 0 && return Base.Libc.errno() == 3 ? :exited : :unknown
