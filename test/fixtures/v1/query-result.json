@@ -1,0 +1,9 @@
+{
+    "logical_path": "experiment.csv",
+    "columns": ["timestamp", "power_mw"],
+    "rows": [
+        {"timestamp": "2026-01-01T00:00:00+08:00", "power_mw": 1.5},
+        {"timestamp": "2026-01-01T01:00:00+08:00", "power_mw": null}
+    ],
+    "row_count": 2
+}

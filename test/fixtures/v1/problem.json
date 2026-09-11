@@ -1,0 +1,8 @@
+{
+    "code": "revision_conflict",
+    "message": "figure head changed",
+    "request_id": "req_fixture",
+    "details": {
+        "current_head_revision_id": "figv_019d0000-0000-7000-8000-000000000005"
+    }
+}

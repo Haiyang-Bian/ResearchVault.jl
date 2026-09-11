@@ -1,0 +1,16 @@
+{
+    "id": "task_019d0000-0000-7000-8000-000000000003",
+    "workspace_id": "ws_019d0000-0000-7000-8000-000000000002",
+    "kind": "figure_render",
+    "status": "completed",
+    "phase": "complete",
+    "completed_units": 4,
+    "total_units": 4,
+    "progress": 1.0,
+    "message": "Figure rendering complete",
+    "request_id": "req_fixture",
+    "started_at": "2026-08-31T00:00:00Z",
+    "finished_at": "2026-08-31T00:00:01Z",
+    "error": null,
+    "result_resource_id": "run_019d0000-0000-7000-8000-000000000004"
+}

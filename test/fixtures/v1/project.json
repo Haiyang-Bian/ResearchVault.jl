@@ -1,0 +1,14 @@
+{
+    "id": "proj_019d0000-0000-7000-8000-000000000001",
+    "workspace_id": "ws_019d0000-0000-7000-8000-000000000002",
+    "title": "Experiment",
+    "description": null,
+    "research_goal": "Compare simulated and measured output",
+    "agent_context": null,
+    "tags": ["fixture"],
+    "default_style": {},
+    "status": "active",
+    "created_at": "2026-08-31T00:00:00Z",
+    "updated_at": "2026-08-31T00:00:00Z",
+    "deleted_at": null
+}
