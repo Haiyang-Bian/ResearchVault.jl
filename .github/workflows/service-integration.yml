@@ -1,0 +1,25 @@
+name: Installed service integration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: [self-hosted, windows, x64, research-vault]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v2
+      - name: Run against isolated installed service
+        shell: pwsh
+        run: |
+          if (-not $env:RESEARCH_VAULT_INTEGRATION_ROOT) {
+            throw 'Self-hosted runner must provide an isolated RESEARCH_VAULT_INTEGRATION_ROOT.'
+          }
+          julia --project=. -e 'using Pkg; Pkg.instantiate()'
+          julia --project=. test/integration.jl
