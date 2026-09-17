@@ -17,9 +17,11 @@ jobs:
       - uses: julia-actions/cache@v2
       - name: Run against isolated installed service
         shell: pwsh
+        env:
+          RESEARCH_VAULT_FULL_INTEGRATION: 'true'
         run: |
-          if (-not $env:RESEARCH_VAULT_INTEGRATION_ROOT) {
-            throw 'Self-hosted runner must provide an isolated RESEARCH_VAULT_INTEGRATION_ROOT.'
+          if (-not $env:RESEARCH_VAULT_INSTALLATION) {
+            throw 'Self-hosted runner must provide a complete RESEARCH_VAULT_INSTALLATION directory.'
           }
           julia --project=. -e 'using Pkg; Pkg.instantiate()'
-          julia --project=. test/integration.jl
+          julia --project=. test/local_service_probe.jl $env:RESEARCH_VAULT_INSTALLATION

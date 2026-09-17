@@ -1,7 +1,8 @@
 # ResearchVault.jl
 
-`ResearchVault.jl` 是 Research Vault 本地服务的类型化 Julia 客户端；包 0.5.1 适配 0.13.1 和 0.14.x
-常驻服务、被动运行状态与计划任务激活，保留字体、渲染批次和交互预览接口。它面向 Julia
+`ResearchVault.jl` 是 Research Vault 本地服务的类型化 Julia 客户端；包 0.6.0 候选适配 0.13.1 和
+0.14.x 的旧单用户模式，并支持 0.14.0 候选的 Windows x64 成员身份。它保留常驻服务、被动运行状态、
+计划任务激活、字体、渲染批次和交互预览接口，面向 Julia
 1.10+ 的科研代码，通过回环 HTTP API 使用 Project、DatasetVersion、Run、Figure、Task 和
 Artifact，并遵守与桌面端、Python SDK 和 MCP 相同的数据安全合同。
 

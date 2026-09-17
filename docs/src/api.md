@@ -1,12 +1,15 @@
 # API 概览
 
-连接：`connect_local`、`close`、`health`。
+连接：`connect_local`、`close`、`health`、`identity_context`。
 
-0.5.1 适配 Research Vault 产品身份、常驻服务及原生计划任务激活；被动查询不启动或续期科学 Worker/绘图宿主：
+0.6.0 适配旧单用户和 Windows x64 成员身份、常驻服务及原生计划任务激活；被动查询不启动或续期科学 Worker/绘图宿主：
 
 ```@docs
 runtime_status
+identity_context
 ```
+
+`identity_context` 返回 `IdentityContext`，不包含访问令牌。
 
 科研项目：`projects`、`project`、`create_project`、`update_project`、`project_resources`、
 `attach_resource`。

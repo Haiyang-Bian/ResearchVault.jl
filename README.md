@@ -1,28 +1,21 @@
 # ResearchVault.jl
 
-适配 Research Vault 0.13.1 和 0.14.x。服务常驻，客户端只激活已注册的登录任务；关闭
-SDK 或桌面不会取消已提交任务。
-
-`ResearchVault.jl` 是 Research Vault 的类型化本机 Julia SDK，包版本为 0.5.1，最低支持
+`ResearchVault.jl` 是 Research Vault 的类型化本机 Julia SDK，当前开发版本为 0.6.0 候选，最低支持
 Julia 1.10。它通过认证的 loopback API 使用科研项目、不可变数据版本、场景 Run、Figure
-工作版本、Task 和 Artifact，不直接打开 SQLite、CAS 或 Python Worker。
+工作版本、Task 和 Artifact，不直接打开 SQLite、CAS 或 Python Worker。0.6.0 同时支持旧单用户认证
+和 Research Vault 0.14.0 候选的 Windows x64 成员权限模式。服务常驻；关闭 SDK 或桌面不会取消
+已提交任务。
 
 ## 安装
 
-注册 General Registry 后，稳定版安装为：
-
-```julia
-using Pkg
-Pkg.add("ResearchVault")
-```
-
-注册完成前，或需要固定精确来源时，从独立公开仓库安装：
+目前还没有 General 注册或发布标签，不能使用 `Pkg.add("ResearchVault")` 或 `rev="v0.5.1"`。
+现在可从独立公开仓库固定已审计的 0.5.1 源码提交安装（仍仅支持上述旧认证模式）：
 
 ```julia
 using Pkg
 Pkg.add(PackageSpec(
     url="https://github.com/Haiyang-Bian/ResearchVault.jl.git",
-    rev="v0.5.1",
+    rev="17b4de0ce953bc1d801d653fd857912419051d74",
 ))
 ```
 
@@ -36,7 +29,12 @@ Pkg.add(PackageSpec(
 | 0.12.x | 0.4.x | 历史 `scenario-service` 产品名 |
 | 0.13.0 | 不作为支持组合 | 安装生命周期存在已知缺陷，请升级应用 |
 | 0.13.1 | 0.5.1 或更高 | 支持 `research-vault-service` 和原生 `service-task` |
-| 0.14.x | 0.5.1 或更高 | 动态 DuckDB 与模块化构建不改变客户端 API |
+| 0.14.x 旧单用户认证 | 0.5.1 | 动态 DuckDB 与模块化构建不改变客户端 API |
+| 0.14.0 候选成员权限 | 0.6.0 候选 | 复用已保存桌面身份，严格禁止回退共享令牌 |
+
+0.6.0 的 Windows x64 成员身份适配见[身份合同](docs/src/member-auth.md)；它仍是未经标签或 General
+注册的候选源码。产品仓库的机器可读兼容合同在验收后固定可安装的精确提交。实现和文档有大量
+AI 辅助贡献，维护者须在 General 注册前亲自审阅并理解代码，见 [MIGRATION.md](MIGRATION.md)。
 
 ## 连接
 

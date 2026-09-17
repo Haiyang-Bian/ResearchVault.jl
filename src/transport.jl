@@ -33,6 +33,8 @@ mutable struct VaultClient
     end
 end
 
+Base.show(io::IO, client::VaultClient) = print(io, "VaultClient(", repr(client.endpoint), ", token=<redacted>, closed=", client.closed, ")")
+
 function _http_download(url, headers, destination, timeout)
     response = open(destination, "w") do output
         HTTP.request(

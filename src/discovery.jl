@@ -1,7 +1,10 @@
 struct ServiceConnection
     endpoint::String
     token::String
+    identity::Union{Nothing,_ConnectionIdentity}
 end
+ServiceConnection(endpoint::String, token::String) = ServiceConnection(endpoint, token, nothing)
+Base.show(io::IO, connection::ServiceConnection) = print(io, "ServiceConnection(", repr(connection.endpoint), ", token=<redacted>)")
 
 const _WINDOWS_CURRENT_SERVICE_NAMES = (
     "research-vault-service.exe",
@@ -122,10 +125,18 @@ function _process_identity(discovery::AbstractDict)
     end
 end
 
-function _read_connection(runtime::AbstractString; process_probe=_process_identity)
+function _read_connection(runtime::AbstractString; process_probe=_process_identity,
+                          credential_id=nothing, credential_reader=_windows_credential)
     discovery = _read_json_file(joinpath(runtime, "service.json"))
     discovery isa AbstractDict || return nothing
     haskey(discovery, "endpoint") || return nothing
+    endpoint = try _validate_loopback_endpoint(discovery["endpoint"]) catch; return nothing end
+    identity = process_probe(discovery)
+    identity == :exited && return nothing
+    identity == :alive || throw(VaultConnectionError("service_process_$identity: cannot establish process identity; no business request submitted"))
+    member = _member_credential(runtime; credential_id, credential_reader)
+    member === nothing || return ServiceConnection(endpoint, member.token, member.identity)
+    credential_id === nothing || throw(_credential_error("member_identity_required"))
     token = try
         strip(read(joinpath(runtime, "service.token"), String))
     catch
@@ -133,15 +144,12 @@ function _read_connection(runtime::AbstractString; process_probe=_process_identi
     end
     connection = try
         ServiceConnection(
-            _validate_loopback_endpoint(discovery["endpoint"]),
+            endpoint,
             _validate_token(token),
         )
     catch
         return nothing
     end
-    identity = process_probe(discovery)
-    identity == :exited && return nothing
-    identity == :alive || throw(VaultConnectionError("service_process_$identity: cannot establish process identity; no business request submitted"))
     return connection
 end
 
@@ -243,6 +251,22 @@ function _healthy_connection(connection::ServiceConnection; timeout::Real)
     end
 end
 
+function _client_for_connection(connection::ServiceConnection; timeout::Real)
+    client = VaultClient(connection.endpoint, connection.token; timeout)
+    try
+        if connection.identity === nothing
+            # /health is public: it alone cannot establish that a legacy token works.
+            _request_json(client, "GET", "/api/v1/capabilities")
+        else
+            _verify_identity_context(client, connection.identity)
+        end
+        return client
+    catch
+        close(client)
+        rethrow()
+    end
+end
+
 function connect_local(
     ;
     app_data=nothing,
@@ -250,16 +274,17 @@ function connect_local(
     startup_timeout::Real=15.0,
     request_timeout::Real=30.0,
     service_executable=nothing,
+    credential_id=nothing,
 )
     startup_timeout > 0 || throw(ArgumentError("startup_timeout must be positive"))
     root = app_data === nothing ?
         _default_app_data() : abspath(expanduser(String(app_data)))
     runtime = _runtime_directory(root)
     deadline = time() + Float64(startup_timeout)
-    connection = _read_connection(runtime)
+    connection = _read_connection(runtime; credential_id)
     if connection !== nothing &&
        _healthy_connection(connection; timeout=min(2.0, max(0.001, deadline-time())))
-        return VaultClient(connection.endpoint, connection.token; timeout=request_timeout)
+        return _client_for_connection(connection; timeout=request_timeout)
     end
     auto_start || throw(VaultConnectionError("Research Vault service is not available"))
     resolved_service = connection === nothing ?
@@ -272,10 +297,10 @@ function connect_local(
         end
         sleep(min(0.1, max(0.0, deadline-time())))
         time() >= deadline && break
-        connection = _read_connection(runtime)
+        connection = _read_connection(runtime; credential_id)
         if connection !== nothing &&
            _healthy_connection(connection; timeout=min(2.0, max(0.001, deadline-time())))
-            return VaultClient(connection.endpoint, connection.token; timeout=request_timeout)
+            return _client_for_connection(connection; timeout=request_timeout)
         end
     end
     throw(

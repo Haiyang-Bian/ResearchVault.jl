@@ -13,6 +13,18 @@ jobs:
   compathelper:
     runs-on: ubuntu-latest
     steps:
-      - uses: JuliaRegistries/CompatHelper.jl@v3
+      - uses: julia-actions/setup-julia@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          version: '1'
+      - name: Install CompatHelper
+        shell: julia --color=yes {0}
+        run: |
+          import Pkg
+          Pkg.add(name="CompatHelper", uuid="aa819f21-2bde-4658-8897-bab36330d9b7", version="3")
+      - name: Check dependency compatibility
+        shell: julia --color=yes {0}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          import CompatHelper
+          CompatHelper.main()
