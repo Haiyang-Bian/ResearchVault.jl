@@ -39,6 +39,7 @@
             "lab";
             app_data=root,
             credential_reader=target -> (push!(targets, target); "a"^64),
+            require_windows=false,
         )
         @test selected.origin == "https://10.180.16.127:54443"
         @test selected.identity.user_id == user
@@ -52,7 +53,18 @@
             "lab";
             app_data=root,
             credential_reader=target -> "a"^64,
+            require_windows=false,
         )
+        if !Sys.iswindows()
+            error = try
+                connect_team("lab"; app_data=root)
+                nothing
+            catch caught
+                caught
+            end
+            @test error isa VaultConnectionError
+            @test occursin("windows_x64_team_client_required", sprint(showerror, error))
+        end
     end
 end
 

@@ -9,9 +9,12 @@ function _team_connection(
     name::AbstractString;
     app_data=nothing,
     credential_reader=_windows_credential,
+    require_windows=true,
 )
-    Sys.iswindows() && Sys.WORD_SIZE == 64 ||
-        throw(VaultConnectionError("windows_x64_team_client_required"))
+    if require_windows
+        Sys.iswindows() && Sys.WORD_SIZE == 64 ||
+            throw(VaultConnectionError("windows_x64_team_client_required"))
+    end
     root = _team_configuration_root(app_data)
     value = _read_json_file(joinpath(root, _TEAM_CONNECTIONS_RELATIVE))
     value isa AbstractDict || throw(VaultConnectionError("team_connections_missing"))
