@@ -12,14 +12,16 @@ using JSON
 using SHA
 using Sockets
 using Tables
+using UUIDs
 
-const CLIENT_VERSION = v"0.5.1"
+const CLIENT_VERSION = v"0.6.0"
 const SERVICE_API_VERSION = 1
 const MINIMUM_JULIA_VERSION = v"1.10"
 
 include("errors.jl")
 include("models.jl")
 include("transport.jl")
+include("credentials.jl")
 include("discovery.jl")
 include("query.jl")
 include("api.jl")
@@ -33,6 +35,7 @@ export Artifact,
     FigureRevision,
     FigureRevisionRecord,
     Health,
+    IdentityContext,
     MachineView,
     QueryAggregate,
     QueryFilter,
@@ -87,6 +90,7 @@ export Artifact,
     figure_preview,
     figures,
     health,
+    identity_context,
     runtime_status,
     administrator,
     import_dataset,

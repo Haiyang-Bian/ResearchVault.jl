@@ -7,6 +7,16 @@ struct Health
     engine::Union{Nothing,JsonObject}
 end
 
+struct IdentityContext
+    server_id::String
+    workspace_id::String
+    user_id::String
+    role::String
+    permissions::Vector{String}
+    capabilities::Vector{String}
+    limits::JsonObject
+end
+
 struct ResearchProject
     id::String
     workspace_id::String
@@ -308,6 +318,19 @@ function _parse_model(::Type{Health}, value)
     o = _strict_object(value, ("product", "version", "healthy", "engine"))
     engine = isnothing(o["engine"]) ? nothing : _object(o["engine"], "engine")
     return Health(_string(o["product"], "product"), _string(o["version"], "version"), _boolean(o["healthy"], "healthy"), engine)
+end
+
+function _parse_model(::Type{IdentityContext}, value)
+    o = _strict_object(value, ("server_id", "workspace_id", "user_id", "role", "permissions", "capabilities", "limits"))
+    return IdentityContext(
+        _string(o["server_id"], "server_id"),
+        _string(o["workspace_id"], "workspace_id"),
+        _string(o["user_id"], "user_id"),
+        _string(o["role"], "role"),
+        _strings(o["permissions"], "permissions"),
+        _strings(o["capabilities"], "capabilities"),
+        _object(o["limits"], "limits"),
+    )
 end
 
 

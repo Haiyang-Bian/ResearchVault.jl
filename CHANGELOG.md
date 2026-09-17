@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 - Unreleased
+
+- Windows x64 成员模式通过原生 Credential Manager 读取已保存的桌面用途凭据；支持按非敏感凭据 ID 选择。
+- 连接前核验服务、Workspace 和用户；缺失、损坏、过期或撤销时不回退共享令牌。
+- 新增强类型 `IdentityContext` 与 `identity_context`；客户端和内部连接对象显示时不输出令牌。
+- 保留 0.13.1–0.14.x 旧单用户模式，并在连接时验证认证而不只检查公开 health。
+- 修正未发布标签的安装示例及 CompatHelper 工作流。尚未注册 General，不宣称已发布。
+
 ## 0.5.1 - 2026-09-10
 
 - 识别 `research-vault-service.exe` 及其 Windows target 后缀名，并保留一版

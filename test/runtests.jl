@@ -5,11 +5,12 @@ using Dates
 using DataFrames
 
 @testset "ResearchVault package scaffold" begin
-    @test ResearchVault.CLIENT_VERSION == v"0.5.1"
+    @test ResearchVault.CLIENT_VERSION == v"0.6.0"
     @test ResearchVault.SERVICE_API_VERSION == 1
 end
 
 const FIXTURE_ROOT = joinpath(@__DIR__, "fixtures", "v1")
+include("member_auth.jl")
 
 @testset "font and interactive preview discovery" begin
     calls = []

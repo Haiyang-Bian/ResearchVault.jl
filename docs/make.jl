@@ -8,6 +8,7 @@ makedocs(
     pages=[
         "Home" => "index.md",
         "安装与连接" => "installation.md",
+        "成员身份" => "member-auth.md",
         "科研工作流" => "workflow.md",
         "错误与离线" => "errors.md",
         "API 概览" => "api.md",
