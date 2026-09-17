@@ -1,10 +1,9 @@
 # ResearchVault.jl
 
-`ResearchVault.jl` 是 Research Vault 本地服务的类型化 Julia 客户端；包 0.6.0 候选适配 0.13.1 和
-0.14.x 的旧单用户模式，并支持 0.14.0 候选的 Windows x64 成员身份。它保留常驻服务、被动运行状态、
-计划任务激活、字体、渲染批次和交互预览接口，面向 Julia
-1.10+ 的科研代码，通过回环 HTTP API 使用 Project、DatasetVersion、Run、Figure、Task 和
-Artifact，并遵守与桌面端、Python SDK 和 MCP 相同的数据安全合同。
+`ResearchVault.jl` 是 Research Vault 的类型化 Julia 客户端；包 0.7.0 候选保留本机 loopback
+连接，并支持 Windows team-client 登记的私有 CA HTTPS 团队连接。它面向 Julia 1.10+ 的科研代码，
+通过受权 API 使用 Project、DatasetVersion、Run、Figure、Task 和 Artifact，并遵守与桌面端相同的
+身份与不可变数据合同。
 
 ## 最小示例
 
@@ -14,6 +13,14 @@ using ResearchVault
 connect_local() do vault
     @show health(vault).version
     @show projects(vault)
+end
+```
+
+导入团队邀请后按桌面中的连接名称使用：
+
+```julia
+connect_team("实验室服务器") do vault
+    @show identity_context(vault)
 end
 ```
 

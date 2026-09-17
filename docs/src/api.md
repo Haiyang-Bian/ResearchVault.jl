@@ -1,12 +1,14 @@
 # API 概览
 
-连接：`connect_local`、`close`、`health`、`identity_context`。
+连接：`connect_local`、`connect_team`、`close`、`health`、`identity_context`。
 
-0.6.0 适配旧单用户和 Windows x64 成员身份、常驻服务及原生计划任务激活；被动查询不启动或续期科学 Worker/绘图宿主：
+0.7.0 保留旧单用户和 Windows x64 本机成员身份，并新增命名团队连接；被动查询不启动或续期科学 Worker/绘图宿主：
 
 ```@docs
+connect_team
 runtime_status
 identity_context
+download_dataset_file
 ```
 
 `identity_context` 返回 `IdentityContext`，不包含访问令牌。
@@ -16,6 +18,8 @@ identity_context
 
 数据集：`datasets`、`dataset`、`dataset_versions`、`dataset_version`、`import_dataset`、
 `import_dataset_version`、`create_machine_view`、`query_dataset`。
+
+团队连接额外提供 `download_dataset_file`，按不可变版本和 logical path 流式下载并校验大小、ETag 与 SHA-256。
 
 0.2.0 增加不可变格式约定。导入可传 `format_contract`，或对现有版本创建后继版本；不会更改旧文件、旧视图或项目固定引用。
 
