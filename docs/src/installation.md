@@ -2,14 +2,14 @@
 
 ## 当前来源
 
-General 尚未注册；0.6.0 仍是候选源码，不能先声明支持 `Pkg.add("ResearchVault")`。
-已审计的 0.5.1 旧认证代码可以用精确提交安装（不支持新的成员权限 Vault）：
+General 尚未注册；0.7.0 仍是候选源码，不能先声明支持 `Pkg.add("ResearchVault")`。
+团队应固定维护者审计后的 0.7.0 精确提交：
 
 ```julia
 using Pkg
 Pkg.add(PackageSpec(
     url="https://github.com/Haiyang-Bian/ResearchVault.jl.git",
-    rev="17b4de0ce953bc1d801d653fd857912419051d74",
+    rev="<0.7.0 已审计提交 SHA>",
 ))
 ```
 
@@ -26,6 +26,7 @@ General Registry 注册完成前使用经过验证的 Git 提交；注册完成�
 | 0.13.1 | 0.5.1+ | 支持新服务名与 Rust 原生登录任务激活 |
 | 0.14.x 旧单用户认证 | 0.5.1+ | 模块化构建不改变客户端 API |
 | 0.14.0 成员权限候选 | 0.6.0 候选 | Windows x64 原生凭据；通过精确提交安装 |
+| 0.14.0 团队远程候选 | 0.7.0 候选 | team-client 命名连接与固定 CA HTTPS |
 
 0.6.0 的[成员身份合同](member-auth.md)规定默认读取当前已保存的桌面身份，或通过
 `connect_local(credential_id="<非敏感凭据 ID>")` 显式选择。连接建立后不会随桌面切换身份。
@@ -38,6 +39,20 @@ General Registry 注册完成前使用经过验证的 Git 提交；注册完成�
 服务未运行且 `auto_start=true` 时，只激活当前用户已注册的 Research Vault 登录任务；
 显式 `service_executable` 只能核对注册目标，不直接启动 EXE。缺少或陈旧注册明确失败并提示修复安装。
 客户端不直接读取 SQLite/CAS，令牌不进入 Notebook、日志或异常输出。
+
+## 团队连接
+
+先安装 Research Vault team-client，再从可信渠道取得 `.rvinvite`。在桌面中核对 HTTPS 地址和 CA 指纹后
+导入；一次性邀请秘密只由原生层处理。随后 Julia 使用连接名称：
+
+```julia
+connect_team("实验室服务器") do vault
+    println(identity_context(vault).role)
+end
+```
+
+SDK 不提供“直接传 URL/token”的捷径。更换服务器 IP 或证书后必须由管理员显式换证并更新桌面连接；
+连接失败不会回退本机 Vault。个人 token 的轮换、撤销和连接切换仍在 team-client 中完成。
 
 完整安装包负责注册登录任务，不需要打开桌面。开发时在独立终端运行服务，然后连接它的 Vault 根：
 

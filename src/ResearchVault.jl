@@ -1,20 +1,21 @@
 """
-Typed local Julia client for Research Vault.
+Typed local and Windows team client for Research Vault.
 
-The package communicates only with the loopback `research-vault-service` API. It does
-not open the Vault catalog, CAS, or scientific worker directly.
+The package communicates only with an authenticated Research Vault service API. It
+does not open the Vault catalog, CAS, or scientific worker directly.
 """
 module ResearchVault
 
 using Dates
 using HTTP
 using JSON
+using Reseau
 using SHA
 using Sockets
 using Tables
 using UUIDs
 
-const CLIENT_VERSION = v"0.6.0"
+const CLIENT_VERSION = v"0.7.0"
 const SERVICE_API_VERSION = 1
 const MINIMUM_JULIA_VERSION = v"1.10"
 
@@ -23,6 +24,7 @@ include("models.jl")
 include("transport.jl")
 include("credentials.jl")
 include("discovery.jl")
+include("team.jl")
 include("query.jl")
 include("api.jl")
 include("artifacts.jl")
@@ -62,6 +64,7 @@ export Artifact,
     cancel_task,
     close,
     connect_local,
+    connect_team,
     create_figure,
     create_figure_from_dataset,
     create_figure_from_run,
@@ -74,6 +77,7 @@ export Artifact,
     dataset_usage,
     dataset_version,
     dataset_versions,
+    download_dataset_file,
     datasets,
     download_artifact,
     export_artifact,

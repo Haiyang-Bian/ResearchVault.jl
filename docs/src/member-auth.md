@@ -1,7 +1,7 @@
-# 本机成员身份合同（0.6.0 候选）
+# 本机与团队身份合同（0.7.0 候选）
 
-新增支持仅为 Windows x64 的 loopback 成员权限模式，不是远程团队 HTTPS 客户端。
-旧单用户模式保持兼容；科研 REST 响应和严格模型不变。
+旧单用户和 Windows x64 loopback 成员模式保持兼容。0.7.0 新增显式团队 HTTPS 连接；
+科研 REST 响应和严格模型不因连接位置改变。
 
 - `connect_local` 读取本机 `runtime/identity.json` 中的非敏感凭据引用，再通过
   Windows Credential Manager 读取 `desktop` 用途的原生客户端凭据，绝不使用 MCP 凭据。
@@ -16,6 +16,15 @@
 - 同一个 Windows 用户可以访问自己保存的原生身份；该机制不是对恶意本机代码的安全隔离。
   路径导入导出仍需管理员原生身份；SDK 不新增成员管理、发布、删除或 GC 接口。
 - 凭据仅保留在客户端内存，显示客户端/连接对象时必须脱敏；不进入项目文件、Notebook 输出或异常。
+
+`connect_team(name)` 只接受 team-client 已登记的连接名称，不接受 URL 或 token。SDK 读取用户 app-data
+中的 `research-vault-client/connections.json`，验证 CA PEM 指纹、server/Workspace/user 与 desktop token
+元数据，再从完全限定的 Credential Manager 目标读取秘密。TLS 仅信任该连接的私有 CA，并校验证书链和
+IP SAN；禁止代理、重定向、HTTP 回退和关闭验证。连接后再次用 `/team/v1/context` 核对三类身份。
+
+团队连接支持数据/项目读取编辑、有界查询、可恢复上传、幂等 DatasetVersion 导入和带哈希的版本文件下载。
+当前不支持远程科学计算、Julia 无头绘图、服务器路径导入导出或成果回传；这些能力缺失时 SDK 在提交前失败。
+token 剩余 14 天时只提示用户打开 team-client 轮换，Julia 不改写连接或凭据。
 
 发布前门禁包括正反例、身份绑定、原生凭据读取和清理、撤销及旧模式回归，
 并在临时 Vault 上完成真实导入、查询、计算和绘图。注册状态与实现测试状态分开记录。

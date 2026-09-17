@@ -1,21 +1,19 @@
 # ResearchVault.jl
 
-`ResearchVault.jl` 是 Research Vault 的类型化本机 Julia SDK，当前开发版本为 0.6.0 候选，最低支持
-Julia 1.10。它通过认证的 loopback API 使用科研项目、不可变数据版本、场景 Run、Figure
-工作版本、Task 和 Artifact，不直接打开 SQLite、CAS 或 Python Worker。0.6.0 同时支持旧单用户认证
-和 Research Vault 0.14.0 候选的 Windows x64 成员权限模式。服务常驻；关闭 SDK 或桌面不会取消
-已提交任务。
+`ResearchVault.jl` 是 Research Vault 的类型化 Julia SDK，当前开发版本为 0.7.0 候选，最低支持
+Julia 1.10。它支持本机 loopback Vault，以及 Windows x64 上由 Research Vault team-client 登记的
+HTTPS 团队连接；不直接打开 SQLite、CAS 或 Worker。关闭 SDK 或桌面不会取消服务已接受的任务。
 
 ## 安装
 
 目前还没有 General 注册或发布标签，不能使用 `Pkg.add("ResearchVault")` 或 `rev="v0.5.1"`。
-现在可从独立公开仓库固定已审计的 0.5.1 源码提交安装（仍仅支持上述旧认证模式）：
+团队使用应在维护者完成审计后固定 0.7.0 的精确提交：
 
 ```julia
 using Pkg
 Pkg.add(PackageSpec(
     url="https://github.com/Haiyang-Bian/ResearchVault.jl.git",
-    rev="17b4de0ce953bc1d801d653fd857912419051d74",
+    rev="<0.7.0 已审计提交 SHA>",
 ))
 ```
 
@@ -30,9 +28,10 @@ Pkg.add(PackageSpec(
 | 0.13.0 | 不作为支持组合 | 安装生命周期存在已知缺陷，请升级应用 |
 | 0.13.1 | 0.5.1 或更高 | 支持 `research-vault-service` 和原生 `service-task` |
 | 0.14.x 旧单用户认证 | 0.5.1 | 动态 DuckDB 与模块化构建不改变客户端 API |
-| 0.14.0 候选成员权限 | 0.6.0 候选 | 复用已保存桌面身份，严格禁止回退共享令牌 |
+| 0.14.0 本机成员权限 | 0.6.0+ | 复用已保存桌面身份，严格禁止回退共享令牌 |
+| 0.14.0 团队远程候选 | 0.7.0 候选 | 命名 HTTPS 连接、固定团队 CA、远程导入/查询/下载 |
 
-0.6.0 的 Windows x64 成员身份适配见[身份合同](docs/src/member-auth.md)；它仍是未经标签或 General
+0.7.0 的 Windows x64 身份与团队连接适配见[身份合同](docs/src/member-auth.md)；它仍是未经标签或 General
 注册的候选源码。产品仓库的机器可读兼容合同在验收后固定可安装的精确提交。实现和文档有大量
 AI 辅助贡献，维护者须在 General 注册前亲自审阅并理解代码，见 [MIGRATION.md](MIGRATION.md)。
 
@@ -48,6 +47,20 @@ connect_local() do vault
     println(length(projects(vault)))
 end
 ```
+
+团队成员先用 team-client 导入管理员发放的一次性 `.rvinvite`，核对服务器地址与 CA 指纹；SDK 不接收
+URL 或 token，只按已登记名称连接：
+
+```julia
+connect_team("实验室服务器") do vault
+    context = identity_context(vault)
+    @info "connected" context.user_id context.role
+    println(length(projects(vault)))
+end
+```
+
+团队导入仍调用 `import_dataset` / `import_dataset_version`。SDK 会在本机读取并哈希文件、按 8 MiB
+分块上传、服务端校验后幂等创建不可变 DatasetVersion；客户端绝对路径不会发送到服务器。
 
 服务未运行时，`auto_start=true` 只请求启动已注册任务，不直接创建服务子进程。
 缺少注册时需要修复安装，不能只传一个 EXE 路径代替注册。开发环境先在独立终端启动服务，再连接同一根目录：
@@ -93,8 +106,8 @@ Tables.jl 消费方。JSON `null` 映射为 `missing`，列顺序由服务响应
 
 ## 权限边界
 
-Julia SDK 是本机高信任客户端，可提交明确的导入和 Artifact 导出路径；路径仍由服务规范化和
-校验。它不提供任意 SQL、任意服务 URL、Figure 发布、删除、迁移或 GC。Figure 工作版本必须在
-桌面端人工审阅后发布。
+Julia SDK 是高信任客户端。`connect_local` 可提交本机路径；`connect_team` 只传逻辑路径和字节，
+并复用 team-client 保存的个人桌面凭据。它不提供任意 SQL/URL/token、成员管理、发布、删除、迁移或
+GC。当前团队服务器是 DataOnly；远程科学计算、无头图形和服务器路径导出会在提交前失败。
 
 完整示例见 `examples/experimental_workflow.jl`，API 与故障处理见 `docs/`。

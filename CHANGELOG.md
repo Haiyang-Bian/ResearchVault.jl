@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0 - Unreleased
+
+- 新增 `connect_team(name)`，只读取 Windows team-client 的命名连接与个人 Credential Manager 凭据。
+- HTTPS 固定连接私有 CA并校验证书链/IP SAN，禁止 HTTP、重定向、代理和验证绕过；连接后核对身份上下文。
+- `import_dataset` / `import_dataset_version` 在团队连接中改为分块上传、完整哈希校验和幂等中央提交，不发送本机绝对路径。
+- 新增不可变版本文件流式下载与断点恢复；最终校验 manifest 大小和 SHA-256。
+- 当前远程 DataOnly 能力以 fail-closed 表达：科学计算、无头绘图、服务器路径导出和成果回传不提交请求。
+- 保留 `connect_local` 与 0.6.0 身份行为；仍不创建标签、Release 或 General Registry 条目。
+
 ## 0.6.0 - Unreleased
 
 - Windows x64 成员模式通过原生 Credential Manager 读取已保存的桌面用途凭据；支持按非敏感凭据 ID 选择。

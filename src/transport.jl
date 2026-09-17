@@ -11,6 +11,9 @@ mutable struct VaultClient
     request_function::Function
     download_function::Function
     closed::Bool
+    mode::Symbol
+    transport_owner::Any
+    cleanup_paths::Vector{String}
 
     function VaultClient(
         endpoint::AbstractString,
@@ -29,6 +32,38 @@ mutable struct VaultClient
             request_function,
             download_function,
             false,
+            :local,
+            nothing,
+            String[],
+        )
+    end
+
+    function VaultClient(
+        endpoint::String,
+        token::String,
+        timeout::Float64,
+        request_function::Function,
+        download_function::Function,
+        closed::Bool,
+        mode::Symbol,
+        transport_owner,
+        cleanup_paths::Vector{String},
+    )
+        startswith(endpoint, "https://") ||
+            throw(ArgumentError("team endpoint must use HTTPS"))
+        mode == :team || throw(ArgumentError("internal client mode must be team"))
+        _validate_token(token)
+        timeout > 0 || throw(ArgumentError("timeout must be positive"))
+        return new(
+            endpoint,
+            token,
+            timeout,
+            request_function,
+            download_function,
+            closed,
+            mode,
+            transport_owner,
+            cleanup_paths,
         )
     end
 end
@@ -55,7 +90,19 @@ function _http_download(url, headers, destination, timeout)
 end
 
 function Base.close(client::VaultClient)
+    client.closed && return nothing
     client.closed = true
+    client.transport_owner === nothing || try
+        close(client.transport_owner)
+    catch
+    end
+    for path in client.cleanup_paths
+        try
+            rm(path; force=true)
+        catch
+        end
+    end
+    empty!(client.cleanup_paths)
     return nothing
 end
 
@@ -103,7 +150,8 @@ function _request_json(
     catch error
         error isa InterruptException && rethrow()
         error isa AbstractVaultException && rethrow()
-        throw(VaultConnectionError("local service request failed: $(typeof(error))"))
+        location = client.mode == :team ? "team service" : "local service"
+        throw(VaultConnectionError("$location request failed: $(typeof(error))"))
     end
     response isa TransportResponse || _invalid_response("transport returned an invalid response")
     parsed = if isempty(response.body)

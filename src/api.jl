@@ -244,6 +244,22 @@ function import_dataset(
     warnings=String[],
     format_contract=nothing,
 )
+    if client.mode == :team
+        return _team_import(
+            client,
+            source_path;
+            title,
+            description,
+            kind,
+            tags,
+            source_summary,
+            source,
+            provenance,
+            scientific_metadata,
+            warnings,
+            format_contract,
+        )
+    end
     payload = _import_payload(
         source_path;
         title,
@@ -277,6 +293,23 @@ function import_dataset_version(
     warnings=String[],
     format_contract=nothing,
 )
+    if client.mode == :team
+        return _team_import(
+            client,
+            source_path;
+            target_dataset_id=String(dataset_id),
+            title,
+            description,
+            kind,
+            tags,
+            source_summary,
+            source,
+            provenance,
+            scientific_metadata,
+            warnings,
+            format_contract,
+        )
+    end
     payload = _import_payload(
         source_path;
         title,
@@ -301,6 +334,8 @@ function import_dataset_version(
 end
 
 function _scientific_import(client, route, source_path; options=Dict{String,Any}())
+    client.mode == :team &&
+        throw(VaultConnectionError("team capability unavailable: scientific_import"))
     path = abspath(expanduser(String(source_path)))
     isfile(path) || throw(ArgumentError("scientific import source must be a regular file"))
     payload = Dict("source_path" => path, "options" => _json_object(options))
@@ -389,6 +424,8 @@ function query_dataset(client::VaultClient, version_id, query::QuerySpec; logica
 end
 
 function start_scenario_run(client::VaultClient, request::ScenarioRunRequest)
+    client.mode == :team &&
+        throw(VaultConnectionError("team capability unavailable: scientific_compute"))
     return _task_response(
         _request_json(
             client,
@@ -467,6 +504,8 @@ function export_run(
     format=:csv_zip,
     power_unit=:MW,
 )
+    client.mode == :team &&
+        throw(VaultConnectionError("server-local path export is unavailable through a team connection"))
     format in (:csv_zip, :parquet_zip, "csv_zip", "parquet_zip") ||
         throw(ArgumentError("run export format must be csv_zip or parquet_zip"))
     power_unit in (:MW, :kW, "MW", "kW") ||
@@ -672,6 +711,8 @@ function compare_figure_revisions(client::VaultClient, from_revision_id, to_revi
 end
 
 function render_figure(client::VaultClient, revision_id; formats=[:png, :svg, :pdf])
+    client.mode == :team &&
+        throw(VaultConnectionError("team capability unavailable: headless_render"))
     normalized = String.(formats)
     all(format -> format in ("png", "svg", "pdf"), normalized) ||
         throw(ArgumentError("render formats must be png, svg, or pdf"))
@@ -794,8 +835,12 @@ artifact(client::VaultClient, artifact_id) = _parse_model(
 )
 
 """Passive service and Worker state; does not load or renew any Worker."""
-runtime_status(client::VaultClient) = _open_object(_request_json(client, "GET", "/api/v1/runtime"), "runtime status")
-administrator(client::VaultClient) = _open_object(_request_json(client, "GET", "/api/v1/administrator"), "administrator")
+runtime_status(client::VaultClient) = client.mode == :team ?
+    throw(VaultConnectionError("server-local runtime control is unavailable through a team connection")) :
+    _open_object(_request_json(client, "GET", "/api/v1/runtime"), "runtime status")
+administrator(client::VaultClient) = client.mode == :team ?
+    throw(VaultConnectionError("server-local administration is unavailable through a team connection")) :
+    _open_object(_request_json(client, "GET", "/api/v1/administrator"), "administrator")
 
 """Discover installed font faces; paths and font files never leave the service."""
 function figure_fonts(client::VaultClient; search="", offset=0, limit=100)
@@ -809,6 +854,8 @@ figure_render_batches(client::VaultClient, figure_id) = _open_object(
 """Prepare a rebuildable interactive cache; return ready data or a pollable task, not a render Run."""
 function prepare_figure_preview(client::VaultClient, revision_id; run_id=nothing, artboard_id=nothing,
                                 window=nothing, max_points=4000)
+    client.mode == :team &&
+        throw(VaultConnectionError("Julia headless figure preview is unavailable through a team connection"))
     return _open_object(_request_json(client, "POST", "/api/v1/figure-revisions/$(_segment(revision_id))/interactive-preview";
         body=Dict("run_id"=>run_id, "artboard_id"=>artboard_id, "window"=>window, "max_points"=>max_points)), "interactive preview")
 end
@@ -819,6 +866,8 @@ function figure_preview(client::VaultClient, preview_id)
 end
 
 function export_artifact(client::VaultClient, artifact_id, destination)
+    client.mode == :team &&
+        throw(VaultConnectionError("server-local path export is unavailable through a team connection"))
     return _open_object(
         _request_json(
             client,
